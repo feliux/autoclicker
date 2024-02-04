@@ -5,6 +5,8 @@ import (
 	//"os"
 	"flag"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/feliux/autoclicker/autoclick"
 )
@@ -12,6 +14,7 @@ import (
 var (
 	duration  int
 	delay     int
+	random    bool
 	userInput int
 )
 
@@ -21,11 +24,14 @@ func init() {
 		defaultDelay    int    = 0
 		usageDuration   string = "Duration to run the program (in seconds). If not set the program will ask for it."
 		usageDelay      string = "Time between pulsation (in seconds). If not set the program will ask for it."
+		usageRandom     string = "If true then choose a random value between 1 and delay argument."
 	)
 	flag.IntVar(&duration, "duration", defaultDuration, usageDuration)
 	flag.IntVar(&duration, "du", defaultDuration, usageDuration+" (shorthand)")
 	flag.IntVar(&delay, "delay", defaultDelay, usageDelay)
 	flag.IntVar(&delay, "de", defaultDelay, usageDelay+" (shorthand)")
+	flag.BoolVar(&random, "random", false, usageRandom+" (shorthand)")
+	flag.BoolVar(&random, "r", false, usageRandom+" (shorthand)")
 }
 
 func main() {
@@ -52,9 +58,13 @@ func main() {
 	if err != nil {
 		panic("Please enter an option...")
 	}
-	autoclick.Delay = delay
-	count := 0
-	for count < duration/delay {
+	tf := time.Now().Add(time.Second * time.Duration(duration))
+	for tf.After(time.Now()) {
+		if random {
+			autoclick.Delay = 1 + rand.Intn(delay)
+		} else {
+			autoclick.Delay = delay
+		}
 		switch userInput {
 		case 1:
 			autoclick.Move(x, y)
@@ -63,6 +73,5 @@ func main() {
 		case 3:
 			autoclick.MoveAndClick(x, y)
 		}
-		count++
 	}
 }
